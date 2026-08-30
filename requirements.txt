@@ -16,3 +16,4 @@ langdetect
 yt-dlp
 pynacl
 curl_cffi
+spotify_scraper
