@@ -21,6 +21,7 @@ import random
 import time
 import html
 import xml.etree.ElementTree as ET
+from safe_math import safe_calculate, CalcError
 
 
 def _fetch_rl_sync(platform: str, username: str):
@@ -421,7 +422,14 @@ class GlobUtil(commands.Cog):
 
     @commands.command(aliases=["calc", "7sb", "7seb"], help="N7seb lik lmath sahel.")
     async def calculate(self, ctx, *, operation):
-        await ctx.send(eval(operation.replace(" ", "")))
+        try:
+            result = safe_calculate(operation)
+        except CalcError as e:
+            return await ctx.send(f"Mochkil: {e}")
+        text = str(result)
+        if len(text) > 1900:
+            text = text[:1900] + "..."
+        await ctx.send(f"`{text}`")
 
     @commands.command(name="rhyme", aliases=["rhymes", "9afiya"], help="Njbed lik lkelmat li 3endhom nafs l 9afiya.")
     async def rhyme(self, ctx, word: str):
@@ -944,6 +952,10 @@ class GlobUtil(commands.Cog):
 
     @commands.command(name="download", aliases=["dl", "save"], help="Ntelechargi lik video mn TikTok, Instagram, wla YouTube Shorts.")
     async def download(self, ctx, url: str):
+        url = url.strip("<>")
+        if not re.match(r"^https?://", url, re.IGNORECASE):
+            return await ctx.send(embed=discord.Embed(description="Mochkil: 3tini link s7i7 (khasso ybda b http:// wla https://).", color=0x000000))
+
         wait = await ctx.send(embed=discord.Embed(description="Sber chwia...", color=0x000000))
         
         filename = f"download_{ctx.message.id}"
@@ -961,7 +973,10 @@ class GlobUtil(commands.Cog):
         
         if os.path.exists("cookies.txt"):
             cmd.extend(["--cookies", "cookies.txt"])
-            
+
+        # "--" stops yt-dlp from reading the URL as an option (e.g. "--exec ...").
+        cmd.extend(["--", url])
+
         try:
             process = await asyncio.create_subprocess_exec(
                 *cmd,

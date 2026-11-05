@@ -336,7 +336,7 @@ class Bot(commands.Cog):
         view = discord.ui.View()
         view.add_item(discord.ui.Button(
             label="Invite Bot",
-            url="https://discord.com/oauth2/authorize?client_id=1522281059163701349&permissions=8&integration_type=0&scope=bot",
+            url="https://discord.com/oauth2/authorize?client_id=1522281059163701349&permissions=10309967670486&integration_type=0&scope=bot",
             style=discord.ButtonStyle.link
         ))
         view.add_item(discord.ui.Button(

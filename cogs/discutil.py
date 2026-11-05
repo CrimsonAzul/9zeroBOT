@@ -237,13 +237,22 @@ class DiscordUtil(commands.Cog):
         await web.send(
             content=message,
             avatar_url=user.display_avatar.url,
-            username=user.display_name
+            username=user.display_name,
+            # Webhooks can always ping @everyone, so block it explicitly here.
+            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True)
         )
 
     @commands.command(aliases=["dm", "prv"], help="Sift message anonyme l chy wa7d mn server.")
-    async def whisper(self, ctx, user: FuzzyMember = None, *, msg):
-        await ctx.message.delete()
-        await user.send(f"**Anonymous user:** {msg}")
+    @commands.guild_only()
+    async def whisper(self, ctx, user: FuzzyMember, *, msg):
+        try:
+            await ctx.message.delete()
+        except (discord.Forbidden, discord.NotFound):
+            pass
+        try:
+            await user.send(f"**Anonymous user:** {msg}")
+        except discord.Forbidden:
+            await ctx.send(f"Man9edch nsift DM l **{user.display_name}**, 3ndo DMs msdoudin.", delete_after=10)
 
 
     @commands.command(help="Kteb b emojis blast text.")

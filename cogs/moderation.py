@@ -32,6 +32,17 @@ class Moderation(commands.Cog):
         except ValueError:
             return None
 
+    @staticmethod
+    def role_hierarchy_error(ctx, role: discord.Role) -> str | None:
+        """Returns an error message if the author or the bot can't manage this role, else None."""
+        if role.is_default() or role.managed:
+            return f"Mat9edch tbdel {role.mention}, had role ta3 Discord wla ta3 chy bot."
+        if role >= ctx.guild.me.top_role:
+            return f"{role.mention} fo9 mni f roles, man9edch nbdlo."
+        if ctx.author.id != ctx.guild.owner_id and role >= ctx.author.top_role:
+            return f"Mat9edch tbdel {role.mention}, howa b7alk wla fo9 mnk f role ._."
+        return None
+
 
     @commands.command(name="clearsnipes", aliases=["cs"], help="Mse7 l cache tl messagat li tms7o.")
     @commands.has_permissions(manage_messages=True)
@@ -159,6 +170,9 @@ class Moderation(commands.Cog):
     @role.command(aliases=["g", "add"], help="3ti chy role l chy wa7d.")
     @commands.has_permissions(manage_roles=True)
     async def give(self, ctx, member: FuzzyMember, role: discord.Role):
+        error = self.role_hierarchy_error(ctx, role)
+        if error:
+            return await ctx.send(embed=discord.Embed(description=error, color=0x000000))
         if role in member.roles:
             e = discord.Embed(description=f'{member.mention} deja 3endo {role.mention}',
                                color=0x000000)
@@ -171,6 +185,11 @@ class Moderation(commands.Cog):
     @role.command(aliases=["t", "remove"], help="7yed chy role l chy wa7d.")
     @commands.has_permissions(manage_roles=True)
     async def take(self, ctx, member: FuzzyMember, role: discord.Role):
+        error = self.role_hierarchy_error(ctx, role)
+        if error:
+            return await ctx.send(embed=discord.Embed(description=error, color=0x000000))
+        if member != ctx.author and member.top_role >= ctx.author.top_role and ctx.author.id != ctx.guild.owner_id:
+            return await ctx.send(embed=discord.Embed(description=f"Mat9edch t7yed roles l chy wa7d b7alk wla fo9 mnk f role ._.", color=0x000000))
         if role in member.roles:
             await member.remove_roles(role)
             e = discord.Embed(description=f'Sf 7yet {role.mention} l {member.mention}',
@@ -233,6 +252,9 @@ class Moderation(commands.Cog):
     @role.command(aliases=["n"], help="Bdel smiya ta3 chy role.")
     @commands.has_permissions(manage_roles=True)
     async def name(self, ctx, role:discord.Role, *,name:str):
+        error = self.role_hierarchy_error(ctx, role)
+        if error:
+            return await ctx.send(embed=discord.Embed(description=error, color=0x000000))
         await role.edit(name=name)
         e = discord.Embed(description=f"Bdelt smyt role: {role.mention}",
                            color=role.color)
@@ -241,6 +263,9 @@ class Moderation(commands.Cog):
     @role.command(aliases=["c", "colour"], help="Bdel loun ta3 chy role.")
     @commands.has_permissions(manage_roles=True)
     async def color(self, ctx, role: discord.Role, *, color:discord.Color):
+        error = self.role_hierarchy_error(ctx, role)
+        if error:
+            return await ctx.send(embed=discord.Embed(description=error, color=0x000000))
         await role.edit(color=color)
         e = discord.Embed(description=f"Bdelt loun ta3 role: {role.mention}",
                            color=role.color)
@@ -249,6 +274,10 @@ class Moderation(commands.Cog):
     @role.command(aliases=["i"], help="Bdel l icon ta3 chy role.")
     @commands.has_permissions(manage_roles=True)
     async def icon(self, ctx, role: discord.Role, *, image_or_emoji:str=None):
+        error = self.role_hierarchy_error(ctx, role)
+        if error:
+            return await ctx.send(embed=discord.Embed(description=error, color=0x000000))
+
         async def get_image_from_url(url: str):
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:

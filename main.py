@@ -287,7 +287,9 @@ bot = commands.Bot(
     case_insensitive=True,
     chunk_guilds_at_startup=False,
     member_cache_flags=discord.MemberCacheFlags(voice=True, joined=False),
-    max_messages=15
+    max_messages=15,
+    # Never let user-controlled text (say, webhook, etc.) ping @everyone/@here or roles.
+    allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True, replied_user=True)
 )
 bot.Paginator = Paginator
 
